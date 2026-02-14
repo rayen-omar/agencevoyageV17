@@ -26,11 +26,11 @@
               action="action_voyage"
               sequence="30"/>
 
-    <!-- Menu Fournisseurs -->
-    <menuitem id="menu_agencevoyage_fournisseurs"
-              name="Fournisseurs"
+    <!-- Menu Réservations -->
+    <menuitem id="menu_agencevoyage_reservations"
+              name="Réservations"
               parent="menu_agencevoyage_root"
-              action="action_fournisseur"
+              action="action_reservation"
               sequence="40"/>
 
     <!-- Menu Achats -->
@@ -40,11 +40,11 @@
               action="action_achat"
               sequence="50"/>
 
-    <!-- Menu Réservations -->
-    <menuitem id="menu_agencevoyage_reservations"
-              name="Réservations"
+    <!-- Menu Fournisseurs -->
+    <menuitem id="menu_agencevoyage_fournisseurs"
+              name="Fournisseurs"
               parent="menu_agencevoyage_root"
-              action="action_reservation"
+              action="action_fournisseur"
               sequence="60"/>
 
     <!-- Menu Paiements -->

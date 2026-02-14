@@ -1,2 +1,2 @@
 from . import models
-from . import reports
+# Les rapports sont définis dans les fichiers XML, pas besoin d'importer

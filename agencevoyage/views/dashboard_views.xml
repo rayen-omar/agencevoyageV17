@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Ce fichier est vide pour permettre la suppression des enregistrements existants -->
-    <!-- Il sera supprimé après la mise à jour du module -->
+    <!-- Fichier vide - sera supprimé après mise à jour -->
 </odoo>

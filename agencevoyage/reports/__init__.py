@@ -1,4 +1,2 @@
-from . import reservation_report
-from . import caisse_report
-from . import paiement_report
-
+# Les actions de rapport sont définies dans les fichiers XML
+# Pas besoin d'importer les fichiers Python vides

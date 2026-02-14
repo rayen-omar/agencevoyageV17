@@ -129,7 +129,7 @@
                         </page>
                         
                         <!-- Paiements Fournisseur -->
-                        <page string="💸 Paiements">
+                        <page string="Paiements">
                             <field name="paiement_ids" nolabel="1">
                                 <tree string="Paiements" create="1" delete="1">
                                     <field name="name"/>
@@ -167,13 +167,26 @@
         <field name="name">agencevoyage.achat.tree</field>
         <field name="model">agencevoyage.achat</field>
         <field name="arch" type="xml">
-            <tree string="Achats" decoration-info="statut == 'devis'" decoration-warning="statut == 'commande'" decoration-success="statut == 'paye'" decoration-muted="statut == 'annule'">
+            <tree string="Achats" 
+                  decoration-info="statut == 'devis'" 
+                  decoration-warning="statut == 'commande'" 
+                  decoration-success="statut == 'paye'" 
+                  decoration-muted="statut == 'annule'"
+                  default_order="date_achat desc">
                 <field name="name"/>
                 <field name="date_achat"/>
                 <field name="voyage_id"/>
-                <field name="statut"/>
+                <field name="statut" widget="badge" 
+                       decoration-info="statut == 'devis'" 
+                       decoration-warning="statut == 'commande'" 
+                       decoration-success="statut == 'paye'" 
+                       decoration-danger="statut == 'annule'"/>
                 <field name="fournisseur_id"/>
                 <field name="nom_fournisseur"/>
+                <field name="montant_ttc" sum="Total" widget="monetary"/>
+                <field name="reste_a_payer" sum="Reste" widget="monetary" 
+                       decoration-danger="reste_a_payer > 0" 
+                       decoration-success="reste_a_payer == 0"/>
             </tree>
         </field>
     </record>
@@ -184,20 +197,27 @@
         <field name="model">agencevoyage.achat</field>
         <field name="arch" type="xml">
             <search string="Rechercher un Achat">
-                <field name="name"/>
+                <field name="name" string="Numéro"/>
                 <field name="voyage_id"/>
                 <field name="fournisseur_id"/>
                 <field name="nom_fournisseur"/>
+                <field name="date_achat"/>
                 
+                <separator/>
                 <filter string="Devis" name="devis" domain="[('statut', '=', 'devis')]"/>
                 <filter string="Commande" name="commande" domain="[('statut', '=', 'commande')]"/>
                 <filter string="Payé" name="paye" domain="[('statut', '=', 'paye')]"/>
                 <filter string="Annulé" name="annule" domain="[('statut', '=', 'annule')]"/>
                 
+                <separator/>
+                <filter string="Avec reste à payer" name="reste_a_payer" domain="[('reste_a_payer', '&gt;', 0)]"/>
+                <filter string="Payé intégralement" name="paye_integralement" domain="[('reste_a_payer', '=', 0)]"/>
+                
                 <group expand="0" string="Grouper par">
                     <filter string="Statut" name="group_statut" context="{'group_by': 'statut'}"/>
                     <filter string="Voyage" name="group_voyage" context="{'group_by': 'voyage_id'}"/>
                     <filter string="Fournisseur" name="group_fournisseur" context="{'group_by': 'fournisseur_id'}"/>
+                    <filter string="Date" name="group_date" context="{'group_by': 'date_achat'}"/>
                 </group>
             </search>
         </field>
@@ -229,11 +249,70 @@
         </field>
     </record>
 
+    <!-- Vue Kanban Achat -->
+    <record id="view_achat_kanban" model="ir.ui.view">
+        <field name="name">agencevoyage.achat.kanban</field>
+        <field name="model">agencevoyage.achat</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="statut" class="o_kanban_dashboard">
+                <field name="id"/>
+                <field name="name"/>
+                <field name="date_achat"/>
+                <field name="statut"/>
+                <field name="voyage_id"/>
+                <field name="fournisseur_id"/>
+                <field name="nom_fournisseur"/>
+                <field name="montant_ttc"/>
+                <field name="reste_a_payer"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click">
+                            <div class="oe_kanban_content">
+                                <div class="o_kanban_record_top">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title">
+                                            <field name="name"/>
+                                        </strong>
+                                        <div class="o_kanban_record_subtitle">
+                                            <field name="voyage_id"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_record_body">
+                                    <div>
+                                        <i class="fa fa-truck"/> <field name="nom_fournisseur"/>
+                                    </div>
+                                    <div>
+                                        <i class="fa fa-calendar"/> <field name="date_achat"/>
+                                    </div>
+                                    <div class="mt-2">
+                                        <strong>Total: <field name="montant_ttc" widget="monetary"/></strong>
+                                    </div>
+                                    <div t-if="record.reste_a_payer.raw_value > 0" class="text-warning">
+                                        <i class="fa fa-exclamation-triangle"/> Reste: <field name="reste_a_payer" widget="monetary"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
     <!-- Action Achat -->
     <record id="action_achat" model="ir.actions.act_window">
         <field name="name">Achats</field>
         <field name="res_model">agencevoyage.achat</field>
-        <field name="view_mode">tree,form,graph,pivot</field>
+        <field name="view_mode">kanban,tree,form,graph,pivot</field>
         <field name="search_view_id" ref="view_achat_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer votre premier achat
+            </p>
+            <p>
+                Gérez les achats et commandes auprès de vos fournisseurs.
+            </p>
+        </field>
     </record>
 </odoo>

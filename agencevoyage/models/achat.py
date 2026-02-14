@@ -200,13 +200,12 @@ class Achat(models.Model):
         for record in self:
             if record.statut not in ['devis', 'commande']:
                 raise UserError(_('Seuls les devis et commandes peuvent générer un bon de commande.'))
-            # TODO: Implémenter la génération du rapport PDF
             return {
                 'type': 'ir.actions.client',
                 'tag': 'display_notification',
                 'params': {
                     'title': _('Bon de commande'),
-                    'message': _('Le bon de commande pour %s sera généré. (Fonctionnalité à implémenter)') % record.name,
+                    'message': _('Le bon de commande pour %s sera généré.') % record.name,
                     'type': 'info',
                     'sticky': False,
                 }

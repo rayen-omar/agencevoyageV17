@@ -55,7 +55,7 @@
                         <group string="Coordonnées">
                             <field name="email" placeholder="exemple@email.com" widget="email"/>
                             <field name="telephone" placeholder="+216 XX XXX XXX" widget="phone"/>
-                            <field name="adresse" placeholder="Adresse complète du client"/>
+                            <field name="adresse" placeholder="Adresse complète"/>
                         </group>
                     </group>
                     
@@ -91,8 +91,9 @@
         <field name="model">agencevoyage.client</field>
         <field name="arch" type="xml">
             <tree string="Clients">
+                <field name="photo" widget="image" class="o_avatar"/>
                 <field name="nom_complet" string="Nom Complet"/>
-                <field name="sexe"/>
+                <field name="sexe" widget="badge" decoration-info="sexe == 'masculin'" decoration-success="sexe == 'feminin'"/>
                 <field name="nationalite"/>
                 <field name="telephone" widget="phone"/>
                 <field name="email" widget="email"/>
@@ -114,6 +115,7 @@
                 <field name="numero_passport"/>
                 <field name="numero_bancaire"/>
                 
+                <separator/>
                 <filter string="Masculin" name="masculin" domain="[('sexe', '=', 'masculin')]"/>
                 <filter string="Féminin" name="feminin" domain="[('sexe', '=', 'feminin')]"/>
                 

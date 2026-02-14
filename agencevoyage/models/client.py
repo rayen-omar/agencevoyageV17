@@ -90,7 +90,7 @@ class Client(models.Model):
         help='Numéro de compte bancaire',
         tracking=True
     )
-
+    
     @api.depends('nom', 'prenom')
     def _compute_nom_complet(self):
         """Calcule le nom complet à partir du prénom et du nom"""

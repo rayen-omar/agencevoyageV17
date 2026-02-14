@@ -57,7 +57,7 @@
                     
                     <notebook>
                         <!-- Paiement Client -->
-                        <page string="💰 Encaissement (Client)" invisible="type_paiement != 'encaissement'">
+                        <page string="Encaissement (Client)" invisible="type_paiement != 'encaissement'">
                             <group>
                                 <group>
                                     <field name="reservation_id" 
@@ -76,7 +76,7 @@
                         </page>
 
                         <!-- Paiement Fournisseur -->
-                        <page string="💸 Décaissement (Fournisseur)" invisible="type_paiement != 'decaissement'">
+                        <page string="Décaissement (Fournisseur)" invisible="type_paiement != 'decaissement'">
                             <group>
                                 <group>
                                     <field name="achat_id" 
@@ -112,17 +112,26 @@
         <field name="name">agencevoyage.paiement.tree</field>
         <field name="model">agencevoyage.paiement</field>
         <field name="arch" type="xml">
-            <tree string="Paiements" decoration-info="statut == 'en_attente'" decoration-success="statut == 'paye'" decoration-muted="statut == 'annule'">
+            <tree string="Paiements" 
+                  decoration-info="statut == 'en_attente'" 
+                  decoration-success="statut == 'paye'" 
+                  decoration-muted="statut == 'annule'"
+                  default_order="date_paiement desc">
                 <field name="name"/>
                 <field name="date_paiement"/>
-                <field name="type_paiement"/>
+                <field name="type_paiement" widget="badge" 
+                       decoration-success="type_paiement == 'encaissement'" 
+                       decoration-danger="type_paiement == 'decaissement'"/>
                 <field name="reservation_id" invisible="type_paiement != 'encaissement'"/>
                 <field name="client_id" invisible="type_paiement != 'encaissement'"/>
                 <field name="achat_id" invisible="type_paiement != 'decaissement'"/>
                 <field name="fournisseur_id" invisible="type_paiement != 'decaissement'"/>
-                <field name="montant" sum="Total"/>
+                <field name="montant" sum="Total" widget="monetary"/>
                 <field name="mode_paiement"/>
-                <field name="statut"/>
+                <field name="statut" widget="badge" 
+                       decoration-info="statut == 'en_attente'" 
+                       decoration-success="statut == 'paye'" 
+                       decoration-danger="statut == 'annule'"/>
             </tree>
         </field>
     </record>
@@ -133,15 +142,19 @@
         <field name="model">agencevoyage.paiement</field>
         <field name="arch" type="xml">
             <search string="Rechercher un Paiement">
-                <field name="name"/>
+                <field name="name" string="Numéro"/>
                 <field name="reservation_id"/>
                 <field name="client_id"/>
                 <field name="achat_id"/>
                 <field name="fournisseur_id"/>
+                <field name="date_paiement"/>
+                <field name="montant"/>
                 
+                <separator/>
                 <filter string="Encaissement" name="encaissement" domain="[('type_paiement', '=', 'encaissement')]"/>
                 <filter string="Décaissement" name="decaissement" domain="[('type_paiement', '=', 'decaissement')]"/>
                 
+                <separator/>
                 <filter string="En attente" name="en_attente" domain="[('statut', '=', 'en_attente')]"/>
                 <filter string="Payé" name="paye" domain="[('statut', '=', 'paye')]"/>
                 <filter string="Annulé" name="annule" domain="[('statut', '=', 'annule')]"/>
@@ -151,6 +164,8 @@
                     <filter string="Statut" name="group_statut" context="{'group_by': 'statut'}"/>
                     <filter string="Client" name="group_client" context="{'group_by': 'client_id'}"/>
                     <filter string="Fournisseur" name="group_fournisseur" context="{'group_by': 'fournisseur_id'}"/>
+                    <filter string="Date" name="group_date" context="{'group_by': 'date_paiement'}"/>
+                    <filter string="Mois" name="group_month" context="{'group_by': 'date_paiement:month'}"/>
                 </group>
             </search>
         </field>
@@ -182,11 +197,66 @@
         </field>
     </record>
 
+    <!-- Vue Kanban Paiement -->
+    <record id="view_paiement_kanban" model="ir.ui.view">
+        <field name="name">agencevoyage.paiement.kanban</field>
+        <field name="model">agencevoyage.paiement</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="statut" class="o_kanban_dashboard">
+                <field name="id"/>
+                <field name="name"/>
+                <field name="date_paiement"/>
+                <field name="type_paiement"/>
+                <field name="statut"/>
+                <field name="client_id"/>
+                <field name="fournisseur_id"/>
+                <field name="montant"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click">
+                            <div class="oe_kanban_content">
+                                <div class="o_kanban_record_top">
+                                    <div class="o_kanban_record_headings">
+                                        <strong class="o_kanban_record_title">
+                                            <field name="name"/>
+                                        </strong>
+                                        <div class="o_kanban_record_subtitle">
+                                            <field name="date_paiement"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="o_kanban_record_body">
+                                    <div t-if="record.type_paiement.raw_value == 'encaissement'">
+                                        <i class="fa fa-user"/> <field name="client_id"/>
+                                    </div>
+                                    <div t-if="record.type_paiement.raw_value == 'decaissement'">
+                                        <i class="fa fa-truck"/> <field name="fournisseur_id"/>
+                                    </div>
+                                    <div class="mt-2">
+                                        <strong>Montant: <field name="montant" widget="monetary"/></strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
     <!-- Action Paiement -->
     <record id="action_paiement" model="ir.actions.act_window">
         <field name="name">Paiements</field>
         <field name="res_model">agencevoyage.paiement</field>
-        <field name="view_mode">tree,form,graph,pivot</field>
+        <field name="view_mode">kanban,tree,form,graph,pivot</field>
         <field name="search_view_id" ref="view_paiement_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer votre premier paiement
+            </p>
+            <p>
+                Gérez les paiements clients (encaissements) et fournisseurs (décaissements).
+            </p>
+        </field>
     </record>
 </odoo>

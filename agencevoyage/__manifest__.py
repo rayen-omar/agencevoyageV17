@@ -26,7 +26,7 @@
         'views/reservation_views.xml',
         'views/paiement_views.xml',
         'views/caisse_views.xml',
-        'views/dashboard_views.xml',  # Fichier temporaire pour suppression
+        'views/dashboard_views.xml',  # Fichier temporaire vide pour permettre la mise à jour
         'security/ir.model.access.csv',
         'views/menu_views.xml',
         # Rapports

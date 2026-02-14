@@ -84,7 +84,7 @@
                     
                     <notebook>
                         <!-- Encaissement -->
-                        <page string="💰 Encaissement" invisible="type_operation != 'encaissement'">
+                        <page string="Encaissement" invisible="type_operation != 'encaissement'">
                             <group>
                                 <group>
                                     <field name="paiement_client_id" 
@@ -106,7 +106,7 @@
                         </page>
 
                         <!-- Décaissement -->
-                        <page string="💸 Décaissement" invisible="type_operation != 'decaissement'">
+                        <page string="Décaissement" invisible="type_operation != 'decaissement'">
                             <group>
                                 <group>
                                     <field name="paiement_fournisseur_id" 

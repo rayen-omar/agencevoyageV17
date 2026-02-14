@@ -31,6 +31,26 @@
                         outline: none;
                     }
                 </style>
+                <header>
+                    <button name="action_valider_devis" string="Valider en Commande" 
+                            type="object" 
+                            class="oe_highlight"
+                            invisible="statut != 'devis'"
+                            confirm="Êtes-vous sûr de vouloir valider ce devis en commande ?"/>
+                    <button name="action_valider_paye" string="Marquer comme Payé" 
+                            type="object" 
+                            class="oe_highlight"
+                            invisible="statut != 'commande'"
+                            confirm="Êtes-vous sûr de vouloir marquer cette commande comme payée ?"/>
+                    <button name="action_annuler" string="Annuler" 
+                            type="object" 
+                            invisible="statut == 'annule' or statut == 'paye'"
+                            confirm="Êtes-vous sûr de vouloir annuler cet achat ?"/>
+                    <button name="action_generer_bon_commande" string="Générer Bon de Commande" 
+                            type="object" 
+                            invisible="statut not in ['devis', 'commande']"/>
+                    <field name="statut" widget="statusbar" statusbar_visible="devis,commande,paye"/>
+                </header>
                 <sheet>
                     <div class="oe_title">
                         <label for="name" string="ID Achat"/>
@@ -100,6 +120,10 @@
                                     <field name="pourcentage_tva"/>
                                     <field name="montant_tva" readonly="1"/>
                                     <field name="montant_ttc" readonly="1"/>
+                                </group>
+                                <group string="Suivi Paiements">
+                                    <field name="montant_paye" readonly="1"/>
+                                    <field name="reste_a_payer" readonly="1"/>
                                 </group>
                             </group>
                         </page>
@@ -179,11 +203,37 @@
         </field>
     </record>
 
+    <!-- Vue Graphique Achat -->
+    <record id="view_achat_graph" model="ir.ui.view">
+        <field name="name">agencevoyage.achat.graph</field>
+        <field name="model">agencevoyage.achat</field>
+        <field name="arch" type="xml">
+            <graph string="Analyse des Achats" type="bar">
+                <field name="date_achat" type="row" interval="month"/>
+                <field name="montant_ttc" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Vue Pivot Achat -->
+    <record id="view_achat_pivot" model="ir.ui.view">
+        <field name="name">agencevoyage.achat.pivot</field>
+        <field name="model">agencevoyage.achat</field>
+        <field name="arch" type="xml">
+            <pivot string="Analyse des Achats">
+                <field name="date_achat" type="row" interval="month"/>
+                <field name="statut" type="col"/>
+                <field name="montant_ttc" type="measure" operator="sum"/>
+                <field name="montant_ht" type="measure" operator="sum"/>
+            </pivot>
+        </field>
+    </record>
+
     <!-- Action Achat -->
     <record id="action_achat" model="ir.actions.act_window">
         <field name="name">Achats</field>
         <field name="res_model">agencevoyage.achat</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">tree,form,graph,pivot</field>
         <field name="search_view_id" ref="view_achat_search"/>
     </record>
 </odoo>

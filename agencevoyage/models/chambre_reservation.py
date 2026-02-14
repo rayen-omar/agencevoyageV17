@@ -50,3 +50,4 @@ class ChambreReservation(models.Model):
         for record in self:
             record.total_chambre = record.nombre_chambres * record.nombre_nuits * record.prix_nuit
 
+

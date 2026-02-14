@@ -1,5 +1,5 @@
-from odoo import models, fields, api
-from odoo.exceptions import ValidationError
+from odoo import models, fields, api, _
+from odoo.exceptions import ValidationError, UserError
 
 
 class Achat(models.Model):
@@ -142,6 +142,82 @@ class Achat(models.Model):
         string='Paiements',
         domain="[('type_paiement', '=', 'decaissement')]"
     )
+    
+    # Suivi des paiements
+    montant_paye = fields.Float(
+        string='Montant payé',
+        compute='_compute_montant_paye',
+        store=True,
+        digits=(16, 2)
+    )
+    reste_a_payer = fields.Float(
+        string='Reste à payer',
+        compute='_compute_montant_paye',
+        store=True,
+        digits=(16, 2)
+    )
+    
+    @api.depends('paiement_ids.montant', 'paiement_ids.statut', 'montant_ttc')
+    def _compute_montant_paye(self):
+        for record in self:
+            montant_paye_total = sum(record.paiement_ids.filtered(
+                lambda p: p.statut == 'paye'
+            ).mapped('montant'))
+            record.montant_paye = montant_paye_total
+            record.reste_a_payer = record.montant_ttc - montant_paye_total
+    
+    def action_valider_devis(self):
+        """Passe le statut de devis à commande"""
+        for record in self:
+            if record.statut != 'devis':
+                raise UserError(_('Seuls les devis peuvent être validés en commande.'))
+            if not record.ligne_achat_ids:
+                raise UserError(_('Veuillez ajouter au moins une ligne d\'achat avant de valider.'))
+            record.statut = 'commande'
+            record.message_post(body=_('Devis validé en commande par %s') % self.env.user.name)
+        return True
+    
+    def action_valider_paye(self):
+        """Passe le statut de commande à payé"""
+        for record in self:
+            if record.statut != 'commande':
+                raise UserError(_('Seules les commandes peuvent être marquées comme payées.'))
+            record.statut = 'paye'
+            record.message_post(body=_('Commande marquée comme payée par %s') % self.env.user.name)
+        return True
+    
+    def action_annuler(self):
+        """Annule l'achat"""
+        for record in self:
+            if record.statut == 'annule':
+                raise UserError(_('Cet achat est déjà annulé.'))
+            record.statut = 'annule'
+            record.message_post(body=_('Achat annulé par %s') % self.env.user.name)
+        return True
+    
+    def action_generer_bon_commande(self):
+        """Génère un bon de commande (pour l'instant, retourne une notification)"""
+        for record in self:
+            if record.statut not in ['devis', 'commande']:
+                raise UserError(_('Seuls les devis et commandes peuvent générer un bon de commande.'))
+            # TODO: Implémenter la génération du rapport PDF
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('Bon de commande'),
+                    'message': _('Le bon de commande pour %s sera généré. (Fonctionnalité à implémenter)') % record.name,
+                    'type': 'info',
+                    'sticky': False,
+                }
+            }
+    
+    @api.constrains('statut', 'ligne_achat_ids')
+    def _check_lignes_achat(self):
+        """Vérifie qu'il y a des lignes d'achat avant validation"""
+        for record in self:
+            if record.statut in ['commande', 'paye'] and not record.ligne_achat_ids:
+                raise ValidationError(_('Un achat en statut "%s" doit avoir au moins une ligne d\'achat.') % dict(record._fields['statut'].selection)[record.statut])
     
     @api.model
     def create(self, vals):

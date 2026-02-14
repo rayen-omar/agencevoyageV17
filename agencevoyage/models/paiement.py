@@ -1,5 +1,5 @@
-from odoo import models, fields, api
-from odoo.exceptions import ValidationError
+from odoo import models, fields, api, _
+from odoo.exceptions import ValidationError, UserError
 
 
 class Paiement(models.Model):
@@ -126,11 +126,13 @@ class Paiement(models.Model):
             if record.type_paiement == 'encaissement' and record.reservation_id:
                 record.total_a_payer = record.reservation_id.montant_total or 0.0
                 # Calculer le total déjà payé (tous les paiements de cette réservation sauf celui en cours)
-                paiements_existants = self.search([
+                domain = [
                     ('reservation_id', '=', record.reservation_id.id),
-                    ('id', '!=', record.id),
                     ('statut', '=', 'paye')
-                ])
+                ]
+                if isinstance(record.id, int):
+                    domain.append(('id', '!=', record.id))
+                paiements_existants = self.search(domain)
                 record.deja_paye = sum(paiements_existants.mapped('montant'))
                 record.reste_a_payer = record.total_a_payer - record.deja_paye - (record.montant if record.statut == 'paye' else 0)
             else:
@@ -150,13 +152,100 @@ class Paiement(models.Model):
         if self.achat_id and self.achat_id.fournisseur_id:
             self.fournisseur_id = self.achat_id.fournisseur_id
     
+    @api.constrains('montant', 'reservation_id', 'type_paiement')
+    def _check_montant_coherence(self):
+        """Vérifie la cohérence du montant avec la réservation"""
+        for record in self:
+            if record.type_paiement == 'encaissement' and record.reservation_id:
+                if record.montant > record.reste_a_payer + 0.01:  # Tolérance de 0.01 pour les arrondis
+                    raise ValidationError(_(
+                        'Le montant du paiement (%s) ne peut pas dépasser le reste à payer (%s).'
+                    ) % (record.montant, record.reste_a_payer))
+    
+    @api.constrains('montant')
+    def _check_montant_positive(self):
+        """Vérifie que le montant est positif"""
+        for record in self:
+            if record.montant <= 0:
+                raise ValidationError(_('Le montant doit être strictement positif.'))
+    
+    def action_imprimer_recu(self):
+        """Action pour imprimer le reçu"""
+        for record in self:
+            if record.statut != 'paye':
+                raise UserError(_('Seuls les paiements payés peuvent être imprimés.'))
+            return {
+                'type': 'ir.actions.report',
+                'report_name': 'agencevoyage.report_paiement',
+                'report_type': 'qweb-pdf',
+                'res_model': 'agencevoyage.paiement',
+                'context': {'active_ids': [record.id]},
+            }
+    
     @api.model
     def create(self, vals):
-        """Génère automatiquement le numéro de paiement"""
+        """Génère automatiquement le numéro de paiement et crée l'opération de caisse"""
         if vals.get('name', 'Nouveau') == 'Nouveau':
             if vals.get('type_paiement') == 'encaissement':
                 vals['name'] = self.env['ir.sequence'].next_by_code('agencevoyage.paiement.client') or 'Nouveau'
             else:
                 vals['name'] = self.env['ir.sequence'].next_by_code('agencevoyage.paiement.fournisseur') or 'Nouveau'
-        return super(Paiement, self).create(vals)
+        
+        paiement = super(Paiement, self).create(vals)
+        
+        # Créer automatiquement une opération de caisse si le paiement est payé
+        if paiement.statut == 'paye':
+            paiement._create_operation_caisse()
+        
+        return paiement
+    
+    def write(self, vals):
+        """Crée ou met à jour l'opération de caisse si le statut change"""
+        result = super(Paiement, self).write(vals)
+        
+        # Si le statut change vers 'paye', créer l'opération de caisse
+        if 'statut' in vals and vals['statut'] == 'paye':
+            for record in self:
+                # Vérifier si une opération de caisse existe déjà
+                existing_caisse = self.env['agencevoyage.caisse'].search([
+                    ('paiement_client_id', '=', record.id) if record.type_paiement == 'encaissement' else ('paiement_fournisseur_id', '=', record.id)
+                ])
+                if not existing_caisse:
+                    record._create_operation_caisse()
+        
+        return result
+    
+    def _create_operation_caisse(self):
+        """Crée automatiquement une opération de caisse pour ce paiement"""
+        for record in self:
+            if record.statut != 'paye':
+                continue
+            
+            # Vérifier si une opération de caisse existe déjà
+            domain = []
+            if record.type_paiement == 'encaissement':
+                domain = [('paiement_client_id', '=', record.id)]
+            else:
+                domain = [('paiement_fournisseur_id', '=', record.id)]
+            
+            existing = self.env['agencevoyage.caisse'].search(domain)
+            if existing:
+                continue  # L'opération existe déjà
+            
+            # Créer l'opération de caisse
+            caisse_vals = {
+                'date_operation': record.date_paiement,
+                'type_operation': 'encaissement' if record.type_paiement == 'encaissement' else 'decaissement',
+                'montant': record.montant,
+                'mode_paiement': record.mode_paiement,
+                'statut': 'valide',
+                'description': _('Paiement %s') % record.name,
+            }
+            
+            if record.type_paiement == 'encaissement':
+                caisse_vals['paiement_client_id'] = record.id
+            else:
+                caisse_vals['paiement_fournisseur_id'] = record.id
+            
+            self.env['agencevoyage.caisse'].create(caisse_vals)
 

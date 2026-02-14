@@ -42,3 +42,4 @@ class LigneAchat(models.Model):
         for record in self:
             record.total = record.quantite * record.prix
 
+

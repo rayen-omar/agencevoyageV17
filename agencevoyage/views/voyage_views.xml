@@ -262,7 +262,12 @@
                 <filter string="Places disponibles" name="places_disponibles" domain="[('place_disponible', '&gt;', 0)]"/>
                 <filter string="Complet" name="complet" domain="[('place_disponible', '=', 0)]"/>
                 
+                <filter string="Planifié" name="planifie" domain="[('statut_voyage', '=', 'planifie')]"/>
+                <filter string="En cours" name="en_cours" domain="[('statut_voyage', '=', 'en_cours')]"/>
+                <filter string="Terminé" name="termine" domain="[('statut_voyage', '=', 'termine')]"/>
+                
                 <group expand="0" string="Grouper par">
+                    <filter string="Statut" name="group_statut" context="{'group_by': 'statut_voyage'}"/>
                     <filter string="Destination" name="group_destination" context="{'group_by': 'destination_id'}"/>
                     <filter string="Ville de départ" name="group_ville_depart" context="{'group_by': 'ville_depart'}"/>
                 </group>
@@ -270,11 +275,69 @@
         </field>
     </record>
 
+    <!-- Vue Kanban Voyage -->
+    <record id="view_voyage_kanban" model="ir.ui.view">
+        <field name="name">agencevoyage.voyage.kanban</field>
+        <field name="model">agencevoyage.voyage</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="statut_voyage" class="o_kanban_dashboard">
+                <field name="id"/>
+                <field name="titre_voyage"/>
+                <field name="destination_id"/>
+                <field name="date_debut"/>
+                <field name="date_fin"/>
+                <field name="place_disponible"/>
+                <field name="statut_voyage"/>
+                <field name="photo"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div class="oe_kanban_card oe_kanban_global_click">
+                            <div class="o_kanban_image">
+                                <img t-att-src="kanban_image('agencevoyage.voyage', 'photo', record.id.raw_value)" 
+                                     alt="Photo" style="width: 100%; height: 150px; object-fit: cover;"/>
+                            </div>
+                            <div class="oe_kanban_details">
+                                <strong class="o_kanban_record_title">
+                                    <field name="titre_voyage"/>
+                                </strong>
+                                <div class="o_kanban_record_subtitle">
+                                    <field name="destination_id"/>
+                                </div>
+                                <div class="text-muted">
+                                    <i class="fa fa-calendar"/> 
+                                    <field name="date_debut"/> - <field name="date_fin"/>
+                                </div>
+                                <div class="text-muted">
+                                    <i class="fa fa-users"/> 
+                                    <field name="place_disponible"/> places disponibles
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Vue Calendrier Voyage -->
+    <record id="view_voyage_calendar" model="ir.ui.view">
+        <field name="name">agencevoyage.voyage.calendar</field>
+        <field name="model">agencevoyage.voyage</field>
+        <field name="arch" type="xml">
+            <calendar string="Voyages" date_start="date_debut" date_stop="date_fin" 
+                      color="destination_id" event_open_popup="true">
+                <field name="titre_voyage"/>
+                <field name="destination_id"/>
+                <field name="place_disponible"/>
+            </calendar>
+        </field>
+    </record>
+
     <!-- Action pour ouvrir la liste des voyages -->
     <record id="action_voyage" model="ir.actions.act_window">
         <field name="name">Voyages</field>
         <field name="res_model">agencevoyage.voyage</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">kanban,calendar,tree,form</field>
         <field name="search_view_id" ref="view_voyage_search"/>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">

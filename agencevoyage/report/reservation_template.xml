@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_reservation">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="oe_structure"/>
+                        <div class="row">
+                            <div class="col-12">
+                                <h2>Réservation: <span t-field="o.name"/></h2>
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td><strong>Client:</strong></td>
+                                        <td><span t-field="o.client_id"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Voyage:</strong></td>
+                                        <td><span t-field="o.voyage_id"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Date de réservation:</strong></td>
+                                        <td><span t-field="o.date_reservation"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Statut:</strong></td>
+                                        <td><span t-field="o.statut"/></td>
+                                    </tr>
+                                </table>
+                                
+                                <h3>Voyageurs</h3>
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Nom</th>
+                                            <th>Type</th>
+                                            <th>Âge</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="o.voyageur_ids" t-as="voyageur">
+                                            <tr>
+                                                <td><span t-field="voyageur.nom"/></td>
+                                                <td><span t-field="voyageur.type_voyageur"/></td>
+                                                <td><span t-field="voyageur.age"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                                
+                                <h3>Détail des prix</h3>
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td>Prix Transport:</td>
+                                        <td class="text-right"><span t-esc="o.prix_transport" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Prix Hôtel:</td>
+                                        <td class="text-right"><span t-esc="o.prix_hotel" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Prix Restauration:</td>
+                                        <td class="text-right"><span t-esc="o.prix_restauration" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Prix Guide:</td>
+                                        <td class="text-right"><span t-esc="o.prix_guide" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Prix Équipement:</td>
+                                        <td class="text-right"><span t-esc="o.prix_equipement" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Total:</strong></td>
+                                        <td class="text-right"><strong><span t-esc="o.montant_total" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/></strong></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Déjà payé:</td>
+                                        <td class="text-right"><span t-esc="o.deja_paye" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Reste à payer:</strong></td>
+                                        <td class="text-right"><strong><span t-esc="o.reste_a_payer" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/></strong></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

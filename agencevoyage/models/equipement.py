@@ -27,3 +27,4 @@ class Equipement(models.Model):
         required=True
     )
 
+

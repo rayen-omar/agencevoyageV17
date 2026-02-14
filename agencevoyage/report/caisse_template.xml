@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_caisse">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="oe_structure"/>
+                        <div class="row">
+                            <div class="col-12">
+                                <h2>Journal de Caisse - Opération: <span t-field="o.name"/></h2>
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td><strong>Date:</strong></td>
+                                        <td><span t-field="o.date_operation"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Type:</strong></td>
+                                        <td><span t-field="o.type_operation"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Montant:</strong></td>
+                                        <td><span t-esc="o.montant" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Mode de paiement:</strong></td>
+                                        <td><span t-field="o.mode_paiement"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Solde avant:</strong></td>
+                                        <td><span t-esc="o.solde_avant" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Solde après:</strong></td>
+                                        <td><span t-esc="o.solde_apres" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Statut:</strong></td>
+                                        <td><span t-field="o.statut"/></td>
+                                    </tr>
+                                    <t t-if="o.description">
+                                        <tr>
+                                            <td><strong>Description:</strong></td>
+                                            <td><span t-field="o.description"/></td>
+                                        </tr>
+                                    </t>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

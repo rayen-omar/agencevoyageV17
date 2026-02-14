@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_paiement" model="ir.actions.report">
+        <field name="name">Reçu de Paiement</field>
+        <field name="model">agencevoyage.paiement</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">agencevoyage.report_paiement</field>
+        <field name="report_file">agencevoyage.report_paiement</field>
+        <field name="binding_model_id" ref="model_agencevoyage_paiement"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

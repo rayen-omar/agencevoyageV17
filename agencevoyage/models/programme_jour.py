@@ -28,3 +28,4 @@ class ProgrammeJour(models.Model):
         help='Description des activités du jour'
     )
 
+

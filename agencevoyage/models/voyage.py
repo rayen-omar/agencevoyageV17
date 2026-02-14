@@ -69,9 +69,17 @@ class Voyage(models.Model):
     )
     place_reserve = fields.Integer(
         string='Places réservées',
-        default=0,
+        compute='_compute_place_reserve',
+        store=True,
         tracking=True,
-        help='Nombre de places déjà réservées'
+        help='Nombre de places déjà réservées (calculé automatiquement)'
+    )
+    
+    # Relation avec les réservations
+    reservation_ids = fields.One2many(
+        'agencevoyage.reservation',
+        'voyage_id',
+        string='Réservations'
     )
     
     # Champ calculé pour les places disponibles
@@ -80,6 +88,20 @@ class Voyage(models.Model):
         compute='_compute_place_disponible',
         store=True,
         help='Nombre de places encore disponibles'
+    )
+    
+    # Statut du voyage (pour Kanban)
+    statut_voyage = fields.Selection(
+        [
+            ('planifie', 'Planifié'),
+            ('en_cours', 'En cours'),
+            ('termine', 'Terminé'),
+            ('annule', 'Annulé'),
+        ],
+        string='Statut',
+        compute='_compute_statut_voyage',
+        store=True,
+        help='Statut du voyage basé sur les dates'
     )
     
     # Photo
@@ -124,10 +146,36 @@ class Voyage(models.Model):
         string='Équipements'
     )
     
+    @api.depends('reservation_ids', 'reservation_ids.statut', 'reservation_ids.total_personnes')
+    def _compute_place_reserve(self):
+        """Calcule automatiquement le nombre de places réservées depuis les réservations confirmées"""
+        for record in self:
+            # Compter uniquement les réservations confirmées
+            reservations_confirmees = record.reservation_ids.filtered(
+                lambda r: r.statut == 'confirmee'
+            )
+            record.place_reserve = sum(reservations_confirmees.mapped('total_personnes'))
+    
     @api.depends('place_total', 'place_reserve')
     def _compute_place_disponible(self):
         for record in self:
             record.place_disponible = record.place_total - record.place_reserve
+    
+    @api.depends('date_debut', 'date_fin')
+    def _compute_statut_voyage(self):
+        """Calcule le statut du voyage basé sur les dates"""
+        today = fields.Date.today()
+        for record in self:
+            if not record.date_debut or not record.date_fin:
+                record.statut_voyage = 'planifie'
+            elif today < record.date_debut:
+                record.statut_voyage = 'planifie'
+            elif record.date_debut <= today <= record.date_fin:
+                record.statut_voyage = 'en_cours'
+            elif today > record.date_fin:
+                record.statut_voyage = 'termine'
+            else:
+                record.statut_voyage = 'planifie'
     
     # Contraintes
     @api.constrains('date_debut', 'date_fin')
@@ -143,5 +191,5 @@ class Voyage(models.Model):
             if record.place_reserve < 0:
                 raise ValidationError("Le nombre de places réservées ne peut pas être négatif.")
             if record.place_reserve > record.place_total:
-                raise ValidationError("Le nombre de places réservées ne peut pas dépasser le nombre total de places.")
+                raise ValidationError("Le nombre de places réservées (%d) ne peut pas dépasser le nombre total de places (%d)." % (record.place_reserve, record.place_total))
 

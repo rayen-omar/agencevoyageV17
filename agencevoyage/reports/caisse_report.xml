@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_caisse" model="ir.actions.report">
+        <field name="name">Journal de Caisse</field>
+        <field name="model">agencevoyage.caisse</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">agencevoyage.report_caisse</field>
+        <field name="report_file">agencevoyage.report_caisse</field>
+        <field name="binding_model_id" ref="model_agencevoyage_caisse"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

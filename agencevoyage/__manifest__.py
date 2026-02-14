@@ -17,6 +17,7 @@
     'depends': ['base', 'web', 'mail'],
     'data': [
         'data/ir_sequence_data.xml',
+        'data/email_templates.xml',
         'views/client_views.xml',
         'views/destination_views.xml',
         'views/voyage_views.xml',
@@ -25,8 +26,16 @@
         'views/reservation_views.xml',
         'views/paiement_views.xml',
         'views/caisse_views.xml',
+        'views/dashboard_views.xml',  # Fichier temporaire pour suppression
         'security/ir.model.access.csv',
         'views/menu_views.xml',
+        # Rapports
+        'reports/reservation_report.xml',
+        'reports/caisse_report.xml',
+        'reports/paiement_report.xml',
+        'report/reservation_template.xml',
+        'report/caisse_template.xml',
+        'report/paiement_template.xml',
     ],
     'installable': True,
     'application': True,

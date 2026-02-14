@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_paiement">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="oe_structure"/>
+                        <div class="row">
+                            <div class="col-12 text-center">
+                                <h1>REÇU DE PAIEMENT</h1>
+                                <h3>N° <span t-field="o.name"/></h3>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td><strong>Date:</strong></td>
+                                        <td><span t-field="o.date_paiement"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Type:</strong></td>
+                                        <td><span t-field="o.type_paiement"/></td>
+                                    </tr>
+                                    <t t-if="o.type_paiement == 'encaissement'">
+                                        <tr>
+                                            <td><strong>Client:</strong></td>
+                                            <td><span t-field="o.client_id"/></td>
+                                        </tr>
+                                        <tr t-if="o.reservation_id">
+                                            <td><strong>Réservation:</strong></td>
+                                            <td><span t-field="o.reservation_id"/></td>
+                                        </tr>
+                                    </t>
+                                    <t t-if="o.type_paiement == 'decaissement'">
+                                        <tr>
+                                            <td><strong>Fournisseur:</strong></td>
+                                            <td><span t-field="o.fournisseur_id"/></td>
+                                        </tr>
+                                        <tr t-if="o.achat_id">
+                                            <td><strong>Achat:</strong></td>
+                                            <td><span t-field="o.achat_id"/></td>
+                                        </tr>
+                                    </t>
+                                    <tr>
+                                        <td><strong>Mode de paiement:</strong></td>
+                                        <td><span t-field="o.mode_paiement"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Montant:</strong></td>
+                                        <td class="text-right"><h3><span t-esc="o.montant" t-options="{'widget': 'monetary', 'display_currency': env.company.currency_id}"/></h3></td>
+                                    </tr>
+                                    <t t-if="o.reference_bancaire">
+                                        <tr>
+                                            <td><strong>Référence bancaire:</strong></td>
+                                            <td><span t-field="o.reference_bancaire"/></td>
+                                        </tr>
+                                    </t>
+                                </table>
+                                <div class="mt-4 text-center">
+                                    <p>Reçu valable comme justificatif de paiement</p>
+                                    <p class="text-muted">Date d'émission: <span t-field="o.date_paiement"/></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

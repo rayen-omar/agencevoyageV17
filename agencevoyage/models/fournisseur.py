@@ -38,3 +38,4 @@ class Fournisseur(models.Model):
         tracking=True
     )
 
+

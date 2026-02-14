@@ -53,3 +53,4 @@ class Destination(models.Model):
         string='Nom du fichier photo'
     )
 
+

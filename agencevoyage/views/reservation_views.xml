@@ -6,6 +6,22 @@
         <field name="model">agencevoyage.reservation</field>
         <field name="arch" type="xml">
             <form string="Réservation">
+                <header>
+                    <button name="action_confirmer" string="Confirmer la Réservation" 
+                            type="object" 
+                            class="oe_highlight"
+                            invisible="statut == 'confirmee' or statut == 'annulee' or statut == 'terminee'"
+                            confirm="Êtes-vous sûr de vouloir confirmer cette réservation ?"/>
+                    <button name="action_annuler" string="Annuler la Réservation" 
+                            type="object" 
+                            invisible="statut == 'annulee' or statut == 'terminee'"
+                            confirm="Êtes-vous sûr de vouloir annuler cette réservation ?"/>
+                    <button name="action_envoyer_rappel_paiement" string="Envoyer Rappel Paiement" 
+                            type="object" 
+                            invisible="reste_a_payer &lt;= 0 or not client_id.email"
+                            title="Envoyer un email de rappel de paiement au client"/>
+                    <field name="statut" widget="statusbar" statusbar_visible="en_attente,confirmee,terminee"/>
+                </header>
                 <style>
                     .o_form_view .o_field_widget input,
                     .o_form_view .o_field_widget textarea,
@@ -196,13 +212,10 @@
                             </field>
                             
                             <group class="oe_subtotal_footer oe_right">
-                                <group string="Résumé">
+                                <group string="Résumé Financier">
                                     <field name="montant_total" readonly="1"/>
-                                    <div colspan="2">
-                                        <p class="text-muted">
-                                            Total de la réservation
-                                        </p>
-                                    </div>
+                                    <field name="deja_paye" readonly="1"/>
+                                    <field name="reste_a_payer" readonly="1"/>
                                 </group>
                             </group>
                         </page>
@@ -236,6 +249,7 @@
                 <field name="client_id"/>
                 <field name="total_personnes"/>
                 <field name="montant_total" sum="Total"/>
+                <field name="reste_a_payer" sum="Reste à payer"/>
             </tree>
         </field>
     </record>
@@ -264,11 +278,62 @@
         </field>
     </record>
 
+    <!-- Vue Graphique Réservation -->
+    <record id="view_reservation_graph" model="ir.ui.view">
+        <field name="name">agencevoyage.reservation.graph</field>
+        <field name="model">agencevoyage.reservation</field>
+        <field name="arch" type="xml">
+            <graph string="Statistiques des Réservations" type="bar">
+                <field name="date_reservation" type="row" interval="month"/>
+                <field name="montant_total" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Vue Pivot Réservation -->
+    <record id="view_reservation_pivot" model="ir.ui.view">
+        <field name="name">agencevoyage.reservation.pivot</field>
+        <field name="model">agencevoyage.reservation</field>
+        <field name="arch" type="xml">
+            <pivot string="Analyse des Réservations">
+                <field name="date_reservation" type="row" interval="month"/>
+                <field name="voyage_id" type="col"/>
+                <field name="montant_total" type="measure"/>
+                <field name="total_personnes" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
     <!-- Action Réservation -->
     <record id="action_reservation" model="ir.actions.act_window">
         <field name="name">Réservations</field>
         <field name="res_model">agencevoyage.reservation</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">tree,form,graph,pivot</field>
         <field name="search_view_id" ref="view_reservation_search"/>
+    </record>
+
+    <!-- Actions d'export pour Réservation -->
+    <record id="action_reservation_export_excel" model="ir.actions.server">
+        <field name="name">Exporter en Excel</field>
+        <field name="model_id" ref="model_agencevoyage_reservation"/>
+        <field name="binding_model_id" ref="model_agencevoyage_reservation"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    action = records.action_export_excel()
+        </field>
+    </record>
+
+    <record id="action_reservation_export_csv" model="ir.actions.server">
+        <field name="name">Exporter en CSV</field>
+        <field name="model_id" ref="model_agencevoyage_reservation"/>
+        <field name="binding_model_id" ref="model_agencevoyage_reservation"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    action = records.action_export_csv()
+        </field>
     </record>
 </odoo>

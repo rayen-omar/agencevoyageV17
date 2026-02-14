@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Template Email - Confirmation Réservation -->
+    <record id="email_template_reservation_confirmation" model="mail.template">
+        <field name="name">Confirmation de Réservation</field>
+        <field name="model_id" ref="model_agencevoyage_reservation"/>
+        <field name="subject">Confirmation de votre réservation ${object.name}</field>
+        <field name="email_from">${(object.create_uid.email_formatted or user.email_formatted)}</field>
+        <field name="email_to">${object.client_id.email or ''}</field>
+        <field name="body_html" type="html">
+            <div style="margin: 0px; padding: 0px;">
+                <p>Bonjour ${object.client_id.name},</p>
+                <p>Nous avons le plaisir de vous confirmer votre réservation <strong>${object.name}</strong>.</p>
+                <div style="margin: 16px 0px 16px 0px;">
+                    <h3>Détails de votre réservation :</h3>
+                    <ul>
+                        <li><strong>Réservation :</strong> ${object.name}</li>
+                        <li><strong>Voyage :</strong> ${object.voyage_id.titre_voyage or ''}</li>
+                        <li><strong>Date de réservation :</strong> ${format_date(object.date_reservation) or ''}</li>
+                        <li><strong>Nombre de personnes :</strong> ${object.total_personnes}</li>
+                        <li><strong>Montant total :</strong> ${format_amount(object.montant_total, object.env.company.currency_id) or '0.00'}</li>
+                        <li><strong>Reste à payer :</strong> ${format_amount(object.reste_a_payer, object.env.company.currency_id) or '0.00'}</li>
+                    </ul>
+                </div>
+                <p>Nous vous remercions pour votre confiance et restons à votre disposition pour toute information complémentaire.</p>
+                <p>Cordialement,<br/>L'équipe Agence Voyage</p>
+            </div>
+        </field>
+    </record>
+
+    <!-- Template Email - Rappel Paiement -->
+    <record id="email_template_rappel_paiement" model="mail.template">
+        <field name="name">Rappel de Paiement</field>
+        <field name="model_id" ref="model_agencevoyage_reservation"/>
+        <field name="subject">Rappel : Paiement en attente pour la réservation ${object.name}</field>
+        <field name="email_from">${(object.create_uid.email_formatted or user.email_formatted)}</field>
+        <field name="email_to">${object.client_id.email or ''}</field>
+        <field name="body_html" type="html">
+            <div style="margin: 0px; padding: 0px;">
+                <p>Bonjour ${object.client_id.name},</p>
+                <p>Nous vous rappelons qu'un montant est encore dû pour votre réservation <strong>${object.name}</strong>.</p>
+                <div style="margin: 16px 0px 16px 0px;">
+                    <h3>Résumé financier :</h3>
+                    <ul>
+                        <li><strong>Réservation :</strong> ${object.name}</li>
+                        <li><strong>Voyage :</strong> ${object.voyage_id.titre_voyage or ''}</li>
+                        <li><strong>Montant total :</strong> ${format_amount(object.montant_total, object.env.company.currency_id) or '0.00'}</li>
+                        <li><strong>Déjà payé :</strong> ${format_amount(object.deja_paye, object.env.company.currency_id) or '0.00'}</li>
+                        <li><strong style="color: #d9534f;">Reste à payer :</strong> <strong style="color: #d9534f;">${format_amount(object.reste_a_payer, object.env.company.currency_id) or '0.00'}</strong></li>
+                    </ul>
+                </div>
+                <p>Nous vous remercions de régler ce montant dans les plus brefs délais.</p>
+                <p>Cordialement,<br/>L'équipe Agence Voyage</p>
+            </div>
+        </field>
+    </record>
+
+    <!-- Template Email - Changement Statut Réservation -->
+    <record id="email_template_reservation_statut_change" model="mail.template">
+        <field name="name">Changement de Statut Réservation</field>
+        <field name="model_id" ref="model_agencevoyage_reservation"/>
+        <field name="subject">Mise à jour de votre réservation ${object.name}</field>
+        <field name="email_from">${(object.create_uid.email_formatted or user.email_formatted)}</field>
+        <field name="email_to">${object.client_id.email or ''}</field>
+        <field name="body_html" type="html">
+            <div style="margin: 0px; padding: 0px;">
+                <p>Bonjour ${object.client_id.name},</p>
+                <p>Nous vous informons que le statut de votre réservation <strong>${object.name}</strong> a été modifié.</p>
+                <div style="margin: 16px 0px 16px 0px;">
+                    <h3>Nouveau statut :</h3>
+                    <p><strong>${dict(object._fields['statut'].selection).get(object.statut, object.statut)}</strong></p>
+                </div>
+                <p>Pour toute question, n'hésitez pas à nous contacter.</p>
+                <p>Cordialement,<br/>L'équipe Agence Voyage</p>
+            </div>
+        </field>
+    </record>
+</odoo>

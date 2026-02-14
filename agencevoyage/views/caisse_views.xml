@@ -30,7 +30,38 @@
                         box-shadow: 0 0 0 3px rgba(113, 99, 158, 0.2);
                         outline: none;
                     }
+                    
+                    .solde_avant {
+                        background-color: #E3F2FD !important;
+                        padding: 10px !important;
+                        border-radius: 4px !important;
+                        font-weight: bold !important;
+                    }
+                    
+                    .solde_apres {
+                        background-color: #E8F5E9 !important;
+                        padding: 10px !important;
+                        border-radius: 4px !important;
+                        font-weight: bold !important;
+                    }
+                    
+                    .solde_actuel {
+                        background-color: #FFF3E0 !important;
+                        padding: 15px !important;
+                        border-radius: 4px !important;
+                        font-weight: bold !important;
+                        font-size: 16px !important;
+                        text-align: center !important;
+                    }
                 </style>
+                <header>
+                    <button name="action_annuler" string="Annuler l'opération" 
+                            type="object" 
+                            class="oe_highlight"
+                            invisible="statut == 'annule'"
+                            confirm="Êtes-vous sûr de vouloir annuler cette opération ?"/>
+                    <field name="statut" widget="statusbar" statusbar_visible="en_attente,valide"/>
+                </header>
                 <sheet>
                     <div class="oe_title">
                         <label for="name" string="Numéro d'opération"/>
@@ -43,7 +74,11 @@
                         <group>
                             <field name="date_operation" required="1"/>
                             <field name="type_operation" required="1"/>
-                            <field name="statut" required="1"/>
+                        </group>
+                        <group>
+                            <field name="solde_actuel" widget="monetary" 
+                                   class="solde_actuel" 
+                                   readonly="1"/>
                         </group>
                     </group>
                     
@@ -54,12 +89,18 @@
                                 <group>
                                     <field name="paiement_client_id" 
                                            context="{'default_type_paiement': 'encaissement'}"/>
+                                    <field name="montant" required="1"/>
                                 </group>
                                 
                                 <group string="Solde de caisse">
-                                    <field name="solde_avant" readonly="1"/>
-                                    <field name="montant"/>
-                                    <field name="solde_apres" readonly="1"/>
+                                    <field name="solde_avant" readonly="1" 
+                                           widget="monetary" 
+                                           class="solde_avant"/>
+                                    <label for="montant" string="Montant de l'opération"/>
+                                    <field name="montant" readonly="1" widget="monetary"/>
+                                    <field name="solde_apres" readonly="1" 
+                                           widget="monetary" 
+                                           class="solde_apres"/>
                                 </group>
                             </group>
                         </page>
@@ -70,12 +111,18 @@
                                 <group>
                                     <field name="paiement_fournisseur_id" 
                                            context="{'default_type_paiement': 'decaissement'}"/>
+                                    <field name="montant" required="1"/>
                                 </group>
                                 
                                 <group string="Solde de caisse">
-                                    <field name="solde_avant" readonly="1"/>
-                                    <field name="montant"/>
-                                    <field name="solde_apres" readonly="1"/>
+                                    <field name="solde_avant" readonly="1" 
+                                           widget="monetary" 
+                                           class="solde_avant"/>
+                                    <label for="montant" string="Montant de l'opération"/>
+                                    <field name="montant" readonly="1" widget="monetary"/>
+                                    <field name="solde_apres" readonly="1" 
+                                           widget="monetary" 
+                                           class="solde_apres"/>
                                 </group>
                             </group>
                         </page>
@@ -102,16 +149,21 @@
         <field name="name">agencevoyage.caisse.tree</field>
         <field name="model">agencevoyage.caisse</field>
         <field name="arch" type="xml">
-            <tree string="Opérations de caisse" decoration-success="type_operation == 'encaissement' and statut == 'valide'" decoration-danger="type_operation == 'decaissement' and statut == 'valide'" decoration-muted="statut == 'annule'">
+            <tree string="Opérations de caisse" 
+                  decoration-success="type_operation == 'encaissement' and statut == 'valide'" 
+                  decoration-danger="type_operation == 'decaissement' and statut == 'valide'" 
+                  decoration-muted="statut == 'annule'"
+                  default_order="date_operation desc, id desc">
                 <field name="name"/>
                 <field name="date_operation"/>
                 <field name="type_operation"/>
                 <field name="paiement_client_id" invisible="type_operation != 'encaissement'"/>
                 <field name="paiement_fournisseur_id" invisible="type_operation != 'decaissement'"/>
-                <field name="montant" sum="Total"/>
+                <field name="montant" sum="Total" widget="monetary"/>
                 <field name="mode_paiement"/>
-                <field name="solde_apres" sum="Solde final"/>
-                <field name="statut"/>
+                <field name="solde_avant" widget="monetary"/>
+                <field name="solde_apres" sum="Solde final" widget="monetary"/>
+                <field name="statut" widget="badge" decoration-success="statut == 'valide'" decoration-danger="statut == 'annule'"/>
             </tree>
         </field>
     </record>
@@ -125,6 +177,7 @@
                 <field name="name"/>
                 <field name="paiement_client_id"/>
                 <field name="paiement_fournisseur_id"/>
+                <field name="date_operation"/>
                 
                 <filter string="Encaissement" name="encaissement" domain="[('type_operation', '=', 'encaissement')]"/>
                 <filter string="Décaissement" name="decaissement" domain="[('type_operation', '=', 'decaissement')]"/>
@@ -133,12 +186,41 @@
                 <filter string="Validé" name="valide" domain="[('statut', '=', 'valide')]"/>
                 <filter string="Annulé" name="annule" domain="[('statut', '=', 'annule')]"/>
                 
+                <!-- Filtres par période - Les utilisateurs peuvent utiliser le champ date_operation pour filtrer -->
+                
                 <group expand="0" string="Grouper par">
                     <filter string="Type" name="group_type" context="{'group_by': 'type_operation'}"/>
                     <filter string="Statut" name="group_statut" context="{'group_by': 'statut'}"/>
                     <filter string="Date" name="group_date" context="{'group_by': 'date_operation'}"/>
+                    <filter string="Mois" name="group_month" context="{'group_by': 'date_operation:month'}"/>
                 </group>
             </search>
+        </field>
+    </record>
+
+    <!-- Vue Graphique Caisse -->
+    <record id="view_caisse_graph" model="ir.ui.view">
+        <field name="name">agencevoyage.caisse.graph</field>
+        <field name="model">agencevoyage.caisse</field>
+        <field name="arch" type="xml">
+            <graph string="Analyse Financière" type="line">
+                <field name="date_operation" type="row" interval="day"/>
+                <field name="montant" type="measure" operator="sum"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Vue Pivot Caisse -->
+    <record id="view_caisse_pivot" model="ir.ui.view">
+        <field name="name">agencevoyage.caisse.pivot</field>
+        <field name="model">agencevoyage.caisse</field>
+        <field name="arch" type="xml">
+            <pivot string="Analyse Financière">
+                <field name="date_operation" type="row" interval="month"/>
+                <field name="type_operation" type="col"/>
+                <field name="statut" type="col"/>
+                <field name="montant" type="measure" operator="sum"/>
+            </pivot>
         </field>
     </record>
 
@@ -146,7 +228,32 @@
     <record id="action_caisse" model="ir.actions.act_window">
         <field name="name">Caisse</field>
         <field name="res_model">agencevoyage.caisse</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">tree,form,graph,pivot</field>
         <field name="search_view_id" ref="view_caisse_search"/>
+    </record>
+
+    <!-- Actions d'export pour Caisse -->
+    <record id="action_caisse_export_excel" model="ir.actions.server">
+        <field name="name">Exporter en Excel</field>
+        <field name="model_id" ref="model_agencevoyage_caisse"/>
+        <field name="binding_model_id" ref="model_agencevoyage_caisse"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    action = records.action_export_excel()
+        </field>
+    </record>
+
+    <record id="action_caisse_export_csv" model="ir.actions.server">
+        <field name="name">Exporter en CSV</field>
+        <field name="model_id" ref="model_agencevoyage_caisse"/>
+        <field name="binding_model_id" ref="model_agencevoyage_caisse"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    action = records.action_export_csv()
+        </field>
     </record>
 </odoo>

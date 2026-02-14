@@ -6,6 +6,14 @@
         <field name="model">agencevoyage.paiement</field>
         <field name="arch" type="xml">
             <form string="Paiement">
+                <header>
+                    <button name="action_imprimer_recu" string="Imprimer Reçu" 
+                            type="object" 
+                            class="oe_highlight"
+                            invisible="statut != 'paye'"
+                            icon="fa-print"/>
+                    <field name="statut" widget="statusbar" statusbar_visible="en_attente,paye"/>
+                </header>
                 <style>
                     .o_form_view .o_field_widget input,
                     .o_form_view .o_field_widget textarea,
@@ -148,11 +156,37 @@
         </field>
     </record>
 
+    <!-- Vue Graphique Paiement -->
+    <record id="view_paiement_graph" model="ir.ui.view">
+        <field name="name">agencevoyage.paiement.graph</field>
+        <field name="model">agencevoyage.paiement</field>
+        <field name="arch" type="xml">
+            <graph string="Analyse des Paiements" type="line">
+                <field name="date_paiement" type="row" interval="month"/>
+                <field name="montant" type="measure" operator="sum"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Vue Pivot Paiement -->
+    <record id="view_paiement_pivot" model="ir.ui.view">
+        <field name="name">agencevoyage.paiement.pivot</field>
+        <field name="model">agencevoyage.paiement</field>
+        <field name="arch" type="xml">
+            <pivot string="Analyse des Paiements">
+                <field name="date_paiement" type="row" interval="month"/>
+                <field name="type_paiement" type="col"/>
+                <field name="statut" type="col"/>
+                <field name="montant" type="measure" operator="sum"/>
+            </pivot>
+        </field>
+    </record>
+
     <!-- Action Paiement -->
     <record id="action_paiement" model="ir.actions.act_window">
         <field name="name">Paiements</field>
         <field name="res_model">agencevoyage.paiement</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">tree,form,graph,pivot</field>
         <field name="search_view_id" ref="view_paiement_search"/>
     </record>
 </odoo>

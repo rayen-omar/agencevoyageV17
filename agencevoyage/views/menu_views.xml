@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menu principal -->
+    <menuitem id="menu_agencevoyage_root"
+              name="Agence Voyage"
+              sequence="10"/>
+
+    <!-- Menu Clients -->
+    <menuitem id="menu_agencevoyage_clients"
+              name="Clients"
+              parent="menu_agencevoyage_root"
+              action="action_client"
+              sequence="10"/>
+
+    <!-- Menu Destinations -->
+    <menuitem id="menu_agencevoyage_destinations"
+              name="Destinations"
+              parent="menu_agencevoyage_root"
+              action="action_destination"
+              sequence="20"/>
+
+    <!-- Menu Voyages -->
+    <menuitem id="menu_agencevoyage_voyages"
+              name="Voyages"
+              parent="menu_agencevoyage_root"
+              action="action_voyage"
+              sequence="30"/>
+
+    <!-- Menu Fournisseurs -->
+    <menuitem id="menu_agencevoyage_fournisseurs"
+              name="Fournisseurs"
+              parent="menu_agencevoyage_root"
+              action="action_fournisseur"
+              sequence="40"/>
+
+    <!-- Menu Achats -->
+    <menuitem id="menu_agencevoyage_achats"
+              name="Achats"
+              parent="menu_agencevoyage_root"
+              action="action_achat"
+              sequence="50"/>
+
+    <!-- Menu Réservations -->
+    <menuitem id="menu_agencevoyage_reservations"
+              name="Réservations"
+              parent="menu_agencevoyage_root"
+              action="action_reservation"
+              sequence="60"/>
+
+    <!-- Menu Paiements -->
+    <menuitem id="menu_agencevoyage_paiements"
+              name="Paiements"
+              parent="menu_agencevoyage_root"
+              action="action_paiement"
+              sequence="70"/>
+
+    <!-- Menu Caisse -->
+    <menuitem id="menu_agencevoyage_caisse"
+              name="Caisse"
+              parent="menu_agencevoyage_root"
+              action="action_caisse"
+              sequence="80"/>
+</odoo>

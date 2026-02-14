@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue Formulaire Achat -->
+    <record id="view_achat_form" model="ir.ui.view">
+        <field name="name">agencevoyage.achat.form</field>
+        <field name="model">agencevoyage.achat</field>
+        <field name="arch" type="xml">
+            <form string="Achat">
+                <style>
+                    .o_form_view .o_field_widget input,
+                    .o_form_view .o_field_widget textarea,
+                    .o_form_view .o_field_widget select {
+                        border: 2px solid #71639E !important;
+                        border-radius: 4px;
+                        padding: 8px 12px;
+                        transition: all 0.3s ease;
+                    }
+                    
+                    .o_form_view .o_field_widget input:hover,
+                    .o_form_view .o_field_widget textarea:hover,
+                    .o_form_view .o_field_widget select:hover {
+                        border-color: #8B7BB8 !important;
+                        box-shadow: 0 0 0 3px rgba(113, 99, 158, 0.1);
+                    }
+                    
+                    .o_form_view .o_field_widget input:focus,
+                    .o_form_view .o_field_widget textarea:focus,
+                    .o_form_view .o_field_widget select:focus {
+                        border-color: #71639E !important;
+                        box-shadow: 0 0 0 3px rgba(113, 99, 158, 0.2);
+                        outline: none;
+                    }
+                </style>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="ID Achat"/>
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="date_achat" required="1"/>
+                            <field name="voyage_id" required="1"/>
+                            <field name="statut" required="1"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Informations Fournisseur">
+                            <group>
+                                <group string="Sélection du Fournisseur">
+                                    <field name="fournisseur_id" 
+                                           options="{'no_create': False, 'no_create_edit': False}"
+                                           context="{'default_nom': nom_fournisseur, 'default_type_fournisseur': type_fournisseur, 'default_contact': contact, 'default_telephone': telephone, 'default_email': email}"/>
+                                    <div colspan="2">
+                                        <p class="text-muted">
+                                            <i class="fa fa-info-circle"/> 
+                                            Sélectionnez un fournisseur existant ou créez-en un nouveau. Les champs ci-dessous seront remplis automatiquement.
+                                        </p>
+                                    </div>
+                                </group>
+                                
+                                <group string="Informations Fournisseur">
+                                    <field name="nom_fournisseur"/>
+                                    <field name="type_fournisseur"/>
+                                    <field name="contact"/>
+                                    <field name="telephone" widget="phone"/>
+                                    <field name="email" widget="email"/>
+                                </group>
+                            </group>
+                        </page>
+                        
+                        <page string="Lignes d'achat">
+                            <field name="ligne_achat_ids" nolabel="1">
+                                <tree string="Lignes d'achat" create="1" delete="1">
+                                    <field name="service"/>
+                                    <field name="description"/>
+                                    <field name="quantite"/>
+                                    <field name="prix"/>
+                                    <field name="total" readonly="1" sum="Total"/>
+                                </tree>
+                                <form>
+                                    <sheet>
+                                        <group>
+                                            <field name="service"/>
+                                            <field name="description" widget="text"/>
+                                            <field name="quantite"/>
+                                            <field name="prix"/>
+                                            <field name="total" readonly="1"/>
+                                        </group>
+                                    </sheet>
+                                </form>
+                            </field>
+                            
+                            <group class="oe_subtotal_footer oe_right">
+                                <group string="Montant">
+                                    <field name="montant_ht" readonly="1"/>
+                                    <field name="pourcentage_tva"/>
+                                    <field name="montant_tva" readonly="1"/>
+                                    <field name="montant_ttc" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+                        
+                        <!-- Paiements Fournisseur -->
+                        <page string="💸 Paiements">
+                            <field name="paiement_ids" nolabel="1">
+                                <tree string="Paiements" create="1" delete="1">
+                                    <field name="name"/>
+                                    <field name="date_paiement"/>
+                                    <field name="montant" sum="Total"/>
+                                    <field name="mode_paiement"/>
+                                    <field name="statut"/>
+                                </tree>
+                                <form>
+                                    <sheet>
+                                        <group>
+                                            <field name="date_paiement"/>
+                                            <field name="montant"/>
+                                            <field name="mode_paiement"/>
+                                            <field name="reference_bancaire"/>
+                                            <field name="statut"/>
+                                        </group>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" groups="base.group_user"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue Liste Achat -->
+    <record id="view_achat_tree" model="ir.ui.view">
+        <field name="name">agencevoyage.achat.tree</field>
+        <field name="model">agencevoyage.achat</field>
+        <field name="arch" type="xml">
+            <tree string="Achats" decoration-info="statut == 'devis'" decoration-warning="statut == 'commande'" decoration-success="statut == 'paye'" decoration-muted="statut == 'annule'">
+                <field name="name"/>
+                <field name="date_achat"/>
+                <field name="voyage_id"/>
+                <field name="statut"/>
+                <field name="fournisseur_id"/>
+                <field name="nom_fournisseur"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue Recherche Achat -->
+    <record id="view_achat_search" model="ir.ui.view">
+        <field name="name">agencevoyage.achat.search</field>
+        <field name="model">agencevoyage.achat</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher un Achat">
+                <field name="name"/>
+                <field name="voyage_id"/>
+                <field name="fournisseur_id"/>
+                <field name="nom_fournisseur"/>
+                
+                <filter string="Devis" name="devis" domain="[('statut', '=', 'devis')]"/>
+                <filter string="Commande" name="commande" domain="[('statut', '=', 'commande')]"/>
+                <filter string="Payé" name="paye" domain="[('statut', '=', 'paye')]"/>
+                <filter string="Annulé" name="annule" domain="[('statut', '=', 'annule')]"/>
+                
+                <group expand="0" string="Grouper par">
+                    <filter string="Statut" name="group_statut" context="{'group_by': 'statut'}"/>
+                    <filter string="Voyage" name="group_voyage" context="{'group_by': 'voyage_id'}"/>
+                    <filter string="Fournisseur" name="group_fournisseur" context="{'group_by': 'fournisseur_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action Achat -->
+    <record id="action_achat" model="ir.actions.act_window">
+        <field name="name">Achats</field>
+        <field name="res_model">agencevoyage.achat</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_achat_search"/>
+    </record>
+</odoo>

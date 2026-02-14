@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue Formulaire Fournisseur -->
+    <record id="view_fournisseur_form" model="ir.ui.view">
+        <field name="name">agencevoyage.fournisseur.form</field>
+        <field name="model">agencevoyage.fournisseur</field>
+        <field name="arch" type="xml">
+            <form string="Fournisseur">
+                <style>
+                    .o_form_view .o_field_widget input,
+                    .o_form_view .o_field_widget textarea,
+                    .o_form_view .o_field_widget select {
+                        border: 2px solid #71639E !important;
+                        border-radius: 4px;
+                        padding: 8px 12px;
+                        transition: all 0.3s ease;
+                    }
+                    
+                    .o_form_view .o_field_widget input:hover,
+                    .o_form_view .o_field_widget textarea:hover,
+                    .o_form_view .o_field_widget select:hover {
+                        border-color: #8B7BB8 !important;
+                        box-shadow: 0 0 0 3px rgba(113, 99, 158, 0.1);
+                    }
+                    
+                    .o_form_view .o_field_widget input:focus,
+                    .o_form_view .o_field_widget textarea:focus,
+                    .o_form_view .o_field_widget select:focus {
+                        border-color: #71639E !important;
+                        box-shadow: 0 0 0 3px rgba(113, 99, 158, 0.2);
+                        outline: none;
+                    }
+                </style>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="nom" placeholder="Nom du fournisseur"/>
+                        </h1>
+                    </div>
+                    
+                    <group>
+                        <group>
+                            <field name="type_fournisseur" required="1"/>
+                            <field name="contact"/>
+                        </group>
+                        <group>
+                            <field name="telephone" widget="phone"/>
+                            <field name="email" widget="email"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue Liste Fournisseur -->
+    <record id="view_fournisseur_tree" model="ir.ui.view">
+        <field name="name">agencevoyage.fournisseur.tree</field>
+        <field name="model">agencevoyage.fournisseur</field>
+        <field name="arch" type="xml">
+            <tree string="Fournisseurs">
+                <field name="nom"/>
+                <field name="type_fournisseur"/>
+                <field name="contact"/>
+                <field name="telephone" widget="phone"/>
+                <field name="email" widget="email"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action Fournisseur -->
+    <record id="action_fournisseur" model="ir.actions.act_window">
+        <field name="name">Fournisseurs</field>
+        <field name="res_model">agencevoyage.fournisseur</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

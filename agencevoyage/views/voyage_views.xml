@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue Formulaire Voyage -->
+    <record id="view_voyage_form" model="ir.ui.view">
+        <field name="name">agencevoyage.voyage.form</field>
+        <field name="model">agencevoyage.voyage</field>
+        <field name="arch" type="xml">
+            <form string="Voyage">
+                <style>
+                    /* Style simple pour les champs */
+                    .o_form_view .o_field_widget input,
+                    .o_form_view .o_field_widget textarea,
+                    .o_form_view .o_field_widget select {
+                        border: 2px solid #71639E !important;
+                        border-radius: 4px;
+                        padding: 8px 12px;
+                        transition: all 0.3s ease;
+                    }
+                    
+                    .o_form_view .o_field_widget input:hover,
+                    .o_form_view .o_field_widget textarea:hover,
+                    .o_form_view .o_field_widget select:hover {
+                        border-color: #8B7BB8 !important;
+                        box-shadow: 0 0 0 3px rgba(113, 99, 158, 0.1);
+                    }
+                    
+                    .o_form_view .o_field_widget input:focus,
+                    .o_form_view .o_field_widget textarea:focus,
+                    .o_form_view .o_field_widget select:focus {
+                        border-color: #71639E !important;
+                        box-shadow: 0 0 0 3px rgba(113, 99, 158, 0.2);
+                        outline: none;
+                    }
+                </style>
+                <sheet>
+                    <!-- En-tête avec photo -->
+                    <field name="photo" widget="image" class="oe_avatar" options="{'size': [150, 150]}"/>
+                    
+                    <div class="oe_title">
+                        <h1>
+                            <field name="titre_voyage" placeholder="Titre du voyage"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <!-- Informations du voyage -->
+                        <group string="Informations du Voyage">
+                            <field name="destination_id" required="1"/>
+                            <field name="ville_depart" required="1" placeholder="Ville de départ"/>
+                        </group>
+
+                        <!-- Dates du voyage -->
+                        <group string="Dates du Voyage">
+                            <field name="date_debut" required="1"/>
+                            <field name="date_fin" required="1"/>
+                        </group>
+                    </group>
+                    
+                    <group>
+                        <!-- Tarification -->
+                        <group string="Tarification">
+                            <field name="prix_adulte" required="1"/>
+                            <field name="prix_enfant" required="1"/>
+                        </group>
+                        
+                        <!-- Disponibilité -->
+                        <group string="Disponibilité">
+                            <field name="place_total" required="1"/>
+                            <field name="place_reserve"/>
+                            <field name="place_disponible" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <!-- Champ caché pour le nom du fichier photo -->
+                    <field name="photo_filename" invisible="1"/>
+                    
+                    <!-- Notebook avec les détails du voyage -->
+                    <notebook>
+                        <!-- Programme jour par jour -->
+                        <page string="Programme jour par jour">
+                            <field name="programme_jour_ids" nolabel="1">
+                                <tree string="Programme" create="1" delete="1">
+                                    <field name="jour"/>
+                                    <field name="destination_id"/>
+                                    <field name="description"/>
+                                </tree>
+                                <form>
+                                    <sheet>
+                                        <group>
+                                            <field name="jour"/>
+                                            <field name="destination_id"/>
+                                            <field name="description" widget="text"/>
+                                        </group>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </page>
+
+                        <!-- Transport -->
+                        <page string="Transport">
+                            <field name="transport_ids" nolabel="1">
+                                <tree string="Transports" create="1" delete="1">
+                                    <field name="jour"/>
+                                    <field name="destination_id"/>
+                                    <field name="type_transport"/>
+                                    <field name="prix" sum="Total"/>
+                                </tree>
+                                <form>
+                                    <sheet>
+                                        <group>
+                                            <field name="jour"/>
+                                            <field name="destination_id"/>
+                                            <field name="type_transport"/>
+                                            <field name="prix"/>
+                                        </group>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </page>
+
+                        <!-- Hôtel -->
+                        <page string="Hôtel">
+                            <field name="hotel_ids" nolabel="1">
+                                <tree string="Hôtels" create="1" delete="1">
+                                    <field name="destination_id"/>
+                                    <field name="nom_hotel"/>
+                                    <field name="telephone" widget="phone"/>
+                                    <field name="adresse"/>
+                                    <field name="email" widget="email"/>
+                                    <field name="checkin"/>
+                                    <field name="checkout"/>
+                                    <field name="nombre_nuit" readonly="1"/>
+                                    <field name="prix" sum="Total"/>
+                                </tree>
+                                <form>
+                                    <sheet>
+                                        <group>
+                                            <field name="destination_id"/>
+                                            <field name="nom_hotel"/>
+                                            <field name="telephone" widget="phone"/>
+                                            <field name="adresse" widget="text"/>
+                                            <field name="email" widget="email"/>
+                                            <field name="checkin"/>
+                                            <field name="checkout"/>
+                                            <field name="nombre_nuit" readonly="1"/>
+                                            <field name="prix"/>
+                                        </group>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </page>
+
+                        <!-- Restauration -->
+                        <page string="Restauration">
+                            <field name="restauration_ids" nolabel="1">
+                                <tree string="Restauration" create="1" delete="1">
+                                    <field name="jour"/>
+                                    <field name="destination_id"/>
+                                    <field name="type_repas"/>
+                                    <field name="restaurant"/>
+                                    <field name="prix" sum="Total"/>
+                                </tree>
+                                <form>
+                                    <sheet>
+                                        <group>
+                                            <field name="jour"/>
+                                            <field name="destination_id"/>
+                                            <field name="type_repas"/>
+                                            <field name="restaurant"/>
+                                            <field name="prix"/>
+                                        </group>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </page>
+
+                        <!-- Guide -->
+                        <page string="Guide">
+                            <field name="guide_ids" nolabel="1">
+                                <tree string="Guides" create="1" delete="1">
+                                    <field name="nom_guide"/>
+                                    <field name="telephone" widget="phone"/>
+                                    <field name="email" widget="email"/>
+                                    <field name="langue"/>
+                                    <field name="prix" sum="Total"/>
+                                </tree>
+                                <form>
+                                    <sheet>
+                                        <group>
+                                            <field name="nom_guide"/>
+                                            <field name="telephone" widget="phone"/>
+                                            <field name="email" widget="email"/>
+                                            <field name="langue"/>
+                                            <field name="prix"/>
+                                        </group>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </page>
+
+                        <!-- Équipement -->
+                        <page string="Équipement">
+                            <field name="equipement_ids" nolabel="1">
+                                <tree string="Équipements" create="1" delete="1">
+                                    <field name="nom_equipement"/>
+                                    <field name="quantite"/>
+                                    <field name="prix" sum="Total"/>
+                                </tree>
+                                <form>
+                                    <sheet>
+                                        <group>
+                                            <field name="nom_equipement"/>
+                                            <field name="quantite"/>
+                                            <field name="prix"/>
+                                        </group>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+
+                <!-- Chatter pour le suivi des modifications -->
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" groups="base.group_user"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue Liste (Tree) Voyage -->
+    <record id="view_voyage_tree" model="ir.ui.view">
+        <field name="name">agencevoyage.voyage.tree</field>
+        <field name="model">agencevoyage.voyage</field>
+        <field name="arch" type="xml">
+            <tree string="Voyages" decoration-success="place_disponible > 0" decoration-muted="place_disponible == 0">
+                <field name="photo" widget="image" class="o_avatar"/>
+                <field name="titre_voyage"/>
+                <field name="destination_id"/>
+                <field name="ville_depart"/>
+                <field name="date_debut"/>
+                <field name="date_fin"/>
+                <field name="prix_adulte" sum="Total"/>
+                <field name="place_total"/>
+                <field name="place_reserve"/>
+                <field name="place_disponible"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue Recherche Voyage -->
+    <record id="view_voyage_search" model="ir.ui.view">
+        <field name="name">agencevoyage.voyage.search</field>
+        <field name="model">agencevoyage.voyage</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher un Voyage">
+                <field name="titre_voyage"/>
+                <field name="destination_id"/>
+                <field name="ville_depart"/>
+                
+                <filter string="Places disponibles" name="places_disponibles" domain="[('place_disponible', '&gt;', 0)]"/>
+                <filter string="Complet" name="complet" domain="[('place_disponible', '=', 0)]"/>
+                
+                <group expand="0" string="Grouper par">
+                    <filter string="Destination" name="group_destination" context="{'group_by': 'destination_id'}"/>
+                    <filter string="Ville de départ" name="group_ville_depart" context="{'group_by': 'ville_depart'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action pour ouvrir la liste des voyages -->
+    <record id="action_voyage" model="ir.actions.act_window">
+        <field name="name">Voyages</field>
+        <field name="res_model">agencevoyage.voyage</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_voyage_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer votre premier voyage
+            </p>
+            <p>
+                Gérez les voyages : destinations, dates, prix et disponibilités.
+            </p>
+        </field>
+    </record>
+</odoo>

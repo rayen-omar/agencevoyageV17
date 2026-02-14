@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue Formulaire Paiement -->
+    <record id="view_paiement_form" model="ir.ui.view">
+        <field name="name">agencevoyage.paiement.form</field>
+        <field name="model">agencevoyage.paiement</field>
+        <field name="arch" type="xml">
+            <form string="Paiement">
+                <style>
+                    .o_form_view .o_field_widget input,
+                    .o_form_view .o_field_widget textarea,
+                    .o_form_view .o_field_widget select {
+                        border: 2px solid #71639E !important;
+                        border-radius: 4px;
+                        padding: 8px 12px;
+                        transition: all 0.3s ease;
+                    }
+                    
+                    .o_form_view .o_field_widget input:hover,
+                    .o_form_view .o_field_widget textarea:hover,
+                    .o_form_view .o_field_widget select:hover {
+                        border-color: #8B7BB8 !important;
+                        box-shadow: 0 0 0 3px rgba(113, 99, 158, 0.1);
+                    }
+                    
+                    .o_form_view .o_field_widget input:focus,
+                    .o_form_view .o_field_widget textarea:focus,
+                    .o_form_view .o_field_widget select:focus {
+                        border-color: #71639E !important;
+                        box-shadow: 0 0 0 3px rgba(113, 99, 158, 0.2);
+                        outline: none;
+                    }
+                </style>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Numéro de paiement"/>
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="date_paiement" required="1"/>
+                            <field name="type_paiement" required="1"/>
+                            <field name="statut" required="1"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <!-- Paiement Client -->
+                        <page string="💰 Encaissement (Client)" invisible="type_paiement != 'encaissement'">
+                            <group>
+                                <group>
+                                    <field name="reservation_id" 
+                                           context="{'default_type_paiement': 'encaissement'}"/>
+                                    <field name="client_id"/>
+                                    <field name="type_paiement_client"/>
+                                </group>
+                                
+                                <group string="Calculs automatiques">
+                                    <field name="total_a_payer" readonly="1"/>
+                                    <field name="deja_paye" readonly="1"/>
+                                    <field name="montant"/>
+                                    <field name="reste_a_payer" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Paiement Fournisseur -->
+                        <page string="💸 Décaissement (Fournisseur)" invisible="type_paiement != 'decaissement'">
+                            <group>
+                                <group>
+                                    <field name="achat_id" 
+                                           context="{'default_type_paiement': 'decaissement'}"/>
+                                    <field name="fournisseur_id"/>
+                                </group>
+                                
+                                <group>
+                                    <field name="montant"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                    
+                    <group>
+                        <group>
+                            <field name="mode_paiement" required="1"/>
+                            <field name="reference_bancaire"/>
+                        </group>
+                    </group>
+                </sheet>
+
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" groups="base.group_user"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vue Liste Paiement -->
+    <record id="view_paiement_tree" model="ir.ui.view">
+        <field name="name">agencevoyage.paiement.tree</field>
+        <field name="model">agencevoyage.paiement</field>
+        <field name="arch" type="xml">
+            <tree string="Paiements" decoration-info="statut == 'en_attente'" decoration-success="statut == 'paye'" decoration-muted="statut == 'annule'">
+                <field name="name"/>
+                <field name="date_paiement"/>
+                <field name="type_paiement"/>
+                <field name="reservation_id" invisible="type_paiement != 'encaissement'"/>
+                <field name="client_id" invisible="type_paiement != 'encaissement'"/>
+                <field name="achat_id" invisible="type_paiement != 'decaissement'"/>
+                <field name="fournisseur_id" invisible="type_paiement != 'decaissement'"/>
+                <field name="montant" sum="Total"/>
+                <field name="mode_paiement"/>
+                <field name="statut"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue Recherche Paiement -->
+    <record id="view_paiement_search" model="ir.ui.view">
+        <field name="name">agencevoyage.paiement.search</field>
+        <field name="model">agencevoyage.paiement</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher un Paiement">
+                <field name="name"/>
+                <field name="reservation_id"/>
+                <field name="client_id"/>
+                <field name="achat_id"/>
+                <field name="fournisseur_id"/>
+                
+                <filter string="Encaissement" name="encaissement" domain="[('type_paiement', '=', 'encaissement')]"/>
+                <filter string="Décaissement" name="decaissement" domain="[('type_paiement', '=', 'decaissement')]"/>
+                
+                <filter string="En attente" name="en_attente" domain="[('statut', '=', 'en_attente')]"/>
+                <filter string="Payé" name="paye" domain="[('statut', '=', 'paye')]"/>
+                <filter string="Annulé" name="annule" domain="[('statut', '=', 'annule')]"/>
+                
+                <group expand="0" string="Grouper par">
+                    <filter string="Type" name="group_type" context="{'group_by': 'type_paiement'}"/>
+                    <filter string="Statut" name="group_statut" context="{'group_by': 'statut'}"/>
+                    <filter string="Client" name="group_client" context="{'group_by': 'client_id'}"/>
+                    <filter string="Fournisseur" name="group_fournisseur" context="{'group_by': 'fournisseur_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action Paiement -->
+    <record id="action_paiement" model="ir.actions.act_window">
+        <field name="name">Paiements</field>
+        <field name="res_model">agencevoyage.paiement</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_paiement_search"/>
+    </record>
+</odoo>
